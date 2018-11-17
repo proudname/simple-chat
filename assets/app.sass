@@ -1,0 +1,117 @@
+$small: '500px'
+
+body
+  margin: 0
+  overflow: hidden
+a
+  color: black
+  text-decoration: none
+*
+  box-sizing: border-box
+.layout
+  display: flex
+  align-items: stretch
+  height: 100vh
+  padding: 5px
+  box-sizing: border-box
+.active
+  background: rgba(0, 255, 255, 0.31)
+  color: white !important
+.users-column-wrapper
+  flex: 3
+  border-right: 1px solid rgba(0, 0, 0, 0.1)
+  & .user
+    border-top: 1px solid rgba(0, 0, 0, 0.11)
+    list-style: none
+    display: block
+    & a
+      display: block
+      padding: 15px 10px
+  & .users-column
+    padding: 0
+    max-height: 100vh
+    overflow: auto
+.messages
+  width: 100%
+  display: flex
+  align-items: stretch
+  flex-direction: column
+  flex: 9
+  padding: 10px 5px 0px 10px
+  & .message-window
+    align-self: stretch
+    flex: 9
+  & .input-group
+    max-height: 50px
+    flex: 1
+    display: flex
+    align-content: space-between
+    & .message-input
+      flex: 9
+    & .submit-button
+      flex: 1
+.mobile-menu-button
+  display: none
+  padding: 5px
+.name-block-wrapper
+  display: flex
+.icon
+  width: 30px
+  height: 30px
+  border: 1px solid rgba(0, 0, 0, 0.19)
+  border-radius: 50%
+  display: inline-block
+  vertical-align: middle
+.username
+  display: inline-block
+  margin-left: 10px
+  vertical-align: middle
+.message-right
+  float: right
+.message-left
+  float: left
+.message
+  padding: 10px
+  font-size: 18px
+  border-radius: 10px
+  border: 1px solid grey
+  width: max-content
+  clear: both
+  margin: 5px 0
+  max-width: 350px
+  word-break: break-all
+input, button
+  min-height: 40px
+  background: white
+  border: 1px solid rgba(128, 128, 128, 0.2)
+  padding: 5px 10px
+@media (max-width: $small)
+  body
+    overflow-y: auto
+  .name-block-wrapper
+    align-content: space-between
+    flex-direction: column
+    & > *
+      flex: 1
+      margin: 10px 0
+  .input-group
+    flex-direction: column
+    max-height: 100% !important
+  .message-input
+    height: 200px
+    flex: auto
+  .layout
+    flex-direction: column
+  .users-column-wrapper
+    flex: 3
+    border-right: none
+    width: 100%
+  .mobile-menu-button
+    display: block
+  .message-window, .input-group
+    flex: 5 !important
+  .users-column
+    position: absolute
+    background: rgb(235, 255, 215)
+    border: rgba(0,0,0,0.19)
+    width: 100%

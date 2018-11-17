@@ -6,13 +6,19 @@
     "start": "next start"
   },
   "dependencies": {
+    "@zeit/next-sass": "^1.0.1",
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.3",
     "cookie-session": "^2.0.0-beta.3",
     "express": "^4.16.4",
     "google": "^2.1.0",
     "mongoose": "^5.3.6",
     "next": "^7.0.2",
+    "node-sass": "^4.10.0",
     "nodemon": "^1.18.4",
     "react": "^16.5.2",
-    "react-dom": "^16.5.2"
+    "react-dom": "^16.5.2",
+    "socket.io": "^2.1.1",
+    "socket.io-client": "^2.1.1"
   }
 }

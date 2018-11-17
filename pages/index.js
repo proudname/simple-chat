@@ -1,91 +1,103 @@
-import React from 'react'
-import Link from 'next/link'
-import Head from '../src/components/head'
-import Nav from '../src/components/nav'
+import React, {Component} from 'react'
+import UsersColumn from '../src/components/UsersColumn'
+import ChatWindow from '../src/components/ChatWindow'
+import io from 'socket.io-client'
+import '../assets/app.sass'
+import Head from 'next/head'
 
-const Home = () => (
-  <div>
-    <Head title="Home" />
-    <Nav />
+export default class index extends Component {
 
-    <div className="hero">
-      <h1 className="title">Welcome to Next!</h1>
-      <p className="description">
-        To get started, edit <code>pages/index.js</code> and save to reload.
-      </p>
+    constructor(props) {
+        super(props);
+        this.state = {
+            username: null,
+            users: null,
+            activeCompanion: null,
+            messages: {}
 
-      <div className="row">
-        <Link href="https://github.com/zeit/next.js#getting-started">
-          <a className="card">
-            <h3>Getting Started &rarr;</h3>
-            <p>Learn more about Next on Github and in their examples</p>
-          </a>
-        </Link>
-        <Link href="https://open.segment.com/create-next-app">
-          <a className="card">
-            <h3>Examples &rarr;</h3>
-            <p>
-              Find other example boilerplates on the{' '}
-              <code>create-next-app</code> site
-            </p>
-          </a>
-        </Link>
-        <Link href="https://github.com/segmentio/create-next-app">
-          <a className="card">
-            <h3>Create Next App &rarr;</h3>
-            <p>Was this tool helpful? Let us know how we can improve it</p>
-          </a>
-        </Link>
-      </div>
-    </div>
+        };
 
-    <style jsx>{`
-      .hero {
-        width: 100%;
-        color: #333;
-      }
-      .title {
-        margin: 0;
-        width: 100%;
-        padding-top: 80px;
-        line-height: 1.15;
-        font-size: 48px;
-      }
-      .title,
-      .description {
-        text-align: center;
-      }
-      .row {
-        max-width: 880px;
-        margin: 80px auto 40px;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
-      }
-      .card {
-        padding: 18px 18px 24px;
-        width: 220px;
-        text-align: left;
-        text-decoration: none;
-        color: #434343;
-        border: 1px solid #9b9b9b;
-      }
-      .card:hover {
-        border-color: #067df7;
-      }
-      .card h3 {
-        margin: 0;
-        color: #067df7;
-        font-size: 18px;
-      }
-      .card p {
-        margin: 0;
-        padding: 12px 0 0;
-        font-size: 13px;
-        color: #333;
-      }
-    `}</style>
-  </div>
-)
+    }
 
-export default Home
+    socket;
+
+    componentDidMount() {
+        // делаю привязку
+        let t = this;
+        this.socket = io();
+
+        // обрабатываем сессию юзера, получаем username
+        if (!sessionStorage.name) this.socket.emit('user', { username: null, isNew: true });
+        else   this.socket.emit('user', { username: sessionStorage.name, isNew: false });
+
+
+        //обработка поступившего сообщения
+        this.socket.on('new message', function (res) {
+            let tempMessages = {...t.state.messages};
+            switch (t.state.username) {
+                case res.from: {
+                    tempMessages[res.to] ? tempMessages[res.to].push({  direction:'right', text: res.text }) : tempMessages[res.to] = [{  direction:'right', text: res.text }];
+                    t.setState({
+                        messages: tempMessages
+                });
+                    break;
+                }
+                case res.to: {
+                    tempMessages[res.from] ? tempMessages[res.from].push({  direction:'left', text: res.text }) : tempMessages[res.from] = [{  direction:'left', text: res.text }];
+                    t.setState({
+                        messages: tempMessages
+                    });
+                    break;
+                }
+                }
+        });
+
+        //обновление списка пользователей
+        this.socket.on('users', function (res) {
+            let index = res.users.indexOf(t.state.username);
+            if (index !== -1) res.users.splice(index, 1);
+            t.setState((ps) => ({
+                users: res.users,
+
+                //если нет собеседника, по умолчанию ставим первого из списка
+                activeCompanion: ps.activeCompanion ? ps.activeCompanion : res.users[0]
+            }));
+        });
+
+        //обновляем данные пользователя
+        this.socket.on('user', function (res) {
+            t.setState({
+                username: res
+            });
+            sessionStorage.name = res;
+        });
+
+        this.socket.on('err', function (res) {
+            alert(res)
+        });
+
+
+    }
+
+
+
+
+    userSelection(user) {
+        if (this.state.activeCompanion === user) return;
+            this.setState({
+                activeCompanion: user
+            })
+    }
+
+    render() {
+        return (
+            <div className={'layout'}>
+                <Head>
+                    <meta name="viewport" content="width=device-width, initial-scale=1" />
+                </Head>
+                <UsersColumn socket={this.socket} username={this.state.username} companion={this.state.activeCompanion} userSelection={(user) => this.userSelection(user)} users={this.state.users} />
+                <ChatWindow socket={this.socket} messages={this.state.messages[this.state.activeCompanion]} companion={this.state.activeCompanion} messageCallback={(mes) => this.handleNewMessage(mes)} />
+            </div>
+        );
+    }
+}
